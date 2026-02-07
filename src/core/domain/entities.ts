@@ -65,6 +65,7 @@ export interface Product {
   is_featured: boolean;
   is_offer: boolean;
   offer_price?: number;
+  old_price?: number;   // Original price before discount (for offers)
   prep_time?: number;
   stock_quantity?: number;
   created_at?: string;

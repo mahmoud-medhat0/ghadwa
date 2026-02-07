@@ -63,30 +63,19 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children, chefs }) =
     const updateQuantity = (id: string | number, newQty: number, itemToAdd?: MenuItem) => {
         if (newQty < 0) return;
 
-        // Check for chef conflict using chef_id (works for all products: meals, boxes, best sellers, offers)
-        const currentChefId = getCurrentChefId();
-        if (itemToAdd && cart.length > 0 && currentChefId) {
-            // Get chef_id from itemToAdd - if not present, try to find it from chef name
-            let newChefId = itemToAdd.chef_id;
-            if (!newChefId && itemToAdd.chef) {
-                // Try to find chef_id from chef name (for legacy boxes)
-                const chef = chefs.find(c => c.id === itemToAdd.chef);
-                if (chef) {
-                    newChefId = chef.id;
-                }
-            }
+        // Chef conflict check - prevent adding items from different chefs
+        if (itemToAdd && cart.length > 0) {
+            const currentChefId = getCurrentChefId();
+            const newItemChefId = itemToAdd.chef_id;
 
-            // Only check conflict if we have both chef_ids
-            if (newChefId) {
-                // Normalize chef_ids for comparison (handle null/undefined/empty strings)
-                const currentChefIdNormalized = String(currentChefId).trim().toLowerCase();
-                const newChefIdNormalized = String(newChefId).trim().toLowerCase();
-
-                // Only show conflict if chef_ids are different and both are valid
-                if (currentChefIdNormalized !== newChefIdNormalized && currentChefIdNormalized && newChefIdNormalized) {
-                    setConflictModal({ isOpen: true, item: itemToAdd, newQuantity: newQty });
-                    return;
-                }
+            // If there's a chef mismatch, show conflict modal
+            if (currentChefId && newItemChefId && currentChefId !== newItemChefId) {
+                setConflictModal({
+                    isOpen: true,
+                    item: itemToAdd,
+                    newQuantity: newQty
+                });
+                return;
             }
         }
 

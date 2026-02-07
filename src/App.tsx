@@ -32,7 +32,7 @@ import { FrozenPage } from '@/presentation/pages/FrozenPage';
 import { OffersPage } from '@/presentation/pages/OffersPage';
 import { MenuPage } from '@/presentation/pages/MenuPage';
 import { AllChefsPage } from '@/presentation/pages/AllChefsPage';
-// import { ChefDetailsPage } from '@/presentation/pages/ChefDetailsPage';
+import { ChefMenuPage } from '@/presentation/pages/ChefMenuPage';
 import { CheckoutPage } from '@/presentation/pages/CheckoutPage';
 // import { AllChefsPage } from '@/presentation/pages/AllChefsPage';
 // import { FavoritesPage } from '@/presentation/pages/FavoritesPage';
@@ -86,6 +86,7 @@ const router = createBrowserRouter([
             { path: 'offers', element: <OffersPage /> },
             { path: 'menu', element: <MenuPage /> },
             { path: 'all-chefs', element: <AllChefsPage /> },
+            { path: 'chef/:id', element: <ChefMenuPage /> },
             // Add other routes here as we migrate them
             { path: 'checkout', element: <CheckoutPage /> },
         ]

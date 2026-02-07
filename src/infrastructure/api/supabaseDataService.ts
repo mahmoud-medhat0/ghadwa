@@ -41,6 +41,15 @@ export const supabaseDataService: IDataService = {
     },
 
     getMenuItems: async (): Promise<Product[]> => {
+        // Fetch chefs first to map chef name to chef_id
+        const { data: chefsData } = await supabase.from('chefs').select('id, name');
+        const chefsMap = new Map<string, string>();
+        if (chefsData) {
+            chefsData.forEach((chef: any) => {
+                chefsMap.set(chef.name?.toLowerCase(), String(chef.id));
+            });
+        }
+
         // Use 'menu_items' as primary table based on diagnostic
         const { data, error } = await supabase.from('menu_items').select('*');
 
@@ -66,12 +75,18 @@ export const supabaseDataService: IDataService = {
                     }
                 }
 
+                // Lookup chef_id from chef name
+                const chefName = item.chef?.toLowerCase();
+                const chefId = chefName ? chefsMap.get(chefName) : undefined;
+
                 return {
                     ...item,
                     // Map mismatched columns
                     image_url: item.img,
                     prep_time: parseInt(item.time) || 0, // '45 د' -> 45
                     category: category,
+                    chef_id: item.chef_id || chefId, // Use existing chef_id or lookup from name
+                    chef: item.chef, // Keep original chef name
 
                     // Ensure boolean flags
                     is_available: item.is_available ?? true,
@@ -99,18 +114,20 @@ export const supabaseDataService: IDataService = {
     },
 
     getOffers: async (): Promise<Product[]> => {
-        const { data, error } = await supabase.from('menu_items').select('*').eq('is_offer', true);
+        const { data, error } = await supabase.from('offers').select('*');
         if (error) {
             logger.error('SUPABASE', 'Error fetching offers', error);
             return [];
         }
-        // Apply same mapping
+        // Apply same mapping - includes old_price for showing original price
         return (data || []).map((item: any) => ({
             ...item,
-            image_url: item.img,
+            image_url: item.img || item.image_url,
             prep_time: parseInt(item.time) || 0,
             category: 'طواجن',
-            is_available: item.is_available ?? true
+            old_price: item.old_price, // Original price before discount
+            is_available: item.is_available ?? true,
+            is_offer: true
         })) as Product[];
     },
 
@@ -154,12 +171,28 @@ export const supabaseDataService: IDataService = {
     },
 
     getPromoCodes: async (): Promise<PromoCode[]> => {
-        const { data, error } = await supabase.from('promo_codes').select('*').eq('is_active', true);
+        const { data, error } = await supabase.from('promo_codes').select('*');
         if (error) {
             logger.error('SUPABASE', 'Error fetching promo codes', error);
             return [];
         }
-        return data as PromoCode[] || [];
+
+        // Map database fields to PromoCode interface
+        // Database has: code, value, type
+        // Interface expects: code, discount_value, discount_type, is_active, etc.
+        return (data || []).map((item: any) => ({
+            id: String(item.id),
+            code: item.code,
+            discount_type: item.type || item.discount_type || 'percentage',
+            discount_value: item.value || item.discount_value || 0,
+            min_order_amount: item.min_order_amount || 0,
+            max_uses: item.max_uses,
+            current_uses: item.current_uses || 0,
+            valid_from: item.valid_from,
+            valid_until: item.valid_until,
+            is_active: item.is_active !== false, // Default to true if not specified
+            created_at: item.created_at
+        })) as PromoCode[];
     },
 
     getContactSettings: async (): Promise<ContactSettings> => {
@@ -188,53 +221,28 @@ export const supabaseDataService: IDataService = {
     // --- Write ---
     submitOrder: async (order: any): Promise<boolean> => {
         try {
-            // This is a simplified submission. In a real app, you'd insert into 'orders' then 'order_items'
-            // For now, we'll try to insert just the order if structure matches, or log it.
-            // Note: To properly implement this, we need to map the UI 'order' object (CheckoutForm + Cart) to DB columns.
+            // Extract items for JSONB storage
+            const { itemsDetails, items, ...orderData } = order;
 
-            // For this task, we will just log that we would submit to supabase.
-            // To actually submit, we need to know the exact structure of 'order' passed here. 
-            // Assuming it's the `Order` entity (which has items as OrderItem[]), we can try:
-
-            const { itemsDetails, ...orderData } = order;
-
-            // Clean up legacy/UI fields before sending to Supabase
+            // Map to actual database column names (from supabase_schema.sql)
+            // orders table has: customer, phone, address, total, status, items, items_details
             const dbOrder = {
-                customer_name: orderData.customer_name || orderData.name,
-                customer_phone: orderData.customer_phone || orderData.phone,
-                delivery_address: orderData.delivery_address || orderData.address,
-                total_amount: orderData.total_amount || orderData.total,
-                subtotal: orderData.subtotal,
+                customer: orderData.customer_name || orderData.customer || orderData.name,
+                phone: orderData.customer_phone || orderData.phone,
+                address: orderData.delivery_address || orderData.address,
+                total: orderData.total_amount || orderData.total || orderData.subtotal,
                 status: 'pending',
-                // Add other fields as necessary
+                items: itemsDetails?.map((i: any) => i.name).join(', ') || items?.map((i: any) => i.product_name).join(', ') || '',
+                items_details: itemsDetails || items || [],
             };
 
-            const { data: insertedOrder, error: orderError } = await supabase
+            const { error: orderError } = await supabase
                 .from('orders')
-                .insert(dbOrder)
-                .select()
-                .single();
+                .insert(dbOrder);
 
             if (orderError) {
                 logger.error('SUPABASE', 'Error submitting order', orderError);
                 return false;
-            }
-
-            if (itemsDetails && Array.isArray(itemsDetails) && insertedOrder) {
-                const itemsToInsert = itemsDetails.map((item: any) => ({
-                    order_id: insertedOrder.id,
-                    product_id: item.id,
-                    product_name: item.name,
-                    quantity: item.quantity,
-                    unit_price: item.price,
-                    total_price: item.price * item.quantity,
-                }));
-
-                const { error: itemsError } = await supabase.from('order_items').insert(itemsToInsert);
-                if (itemsError) {
-                    logger.error('SUPABASE', 'Error submitting order items', itemsError);
-                    // potentially rollback order?
-                }
             }
 
             return true;

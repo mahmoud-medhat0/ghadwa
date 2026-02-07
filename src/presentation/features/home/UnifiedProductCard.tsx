@@ -113,6 +113,7 @@ export const UnifiedProductCard: React.FC<UnifiedProductCardProps> = ({
                 <div className="flex items-center justify-between pt-4 border-t border-dashed border-gray-100 mt-auto gap-3">
                     <PriceDisplay
                         price={item.price}
+                        oldPrice={item.old_price}
                         size="md"
                         themeColor={themeColor}
                         className="flex-shrink-0"

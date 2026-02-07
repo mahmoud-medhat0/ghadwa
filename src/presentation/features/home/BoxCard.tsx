@@ -72,20 +72,32 @@ export const BoxCard: React.FC<BoxCardProps> = ({
             )}
           </div>
 
-          {/* Description */}
-          {box.description && (
+          {/* Box Items / Contents */}
+          {box.items && box.items.length > 0 && (
+            <div className="mb-4">
+              <p className="text-gray-500 text-sm leading-relaxed line-clamp-2">
+                <span className="font-medium text-gray-600">يحتوي على: </span>
+                {box.items.join(' • ')}
+              </p>
+            </div>
+          )}
+
+          {/* Description (fallback if no items) */}
+          {box.description && (!box.items || box.items.length === 0) && (
             <p className="text-gray-500 text-sm leading-relaxed mb-4 line-clamp-2">
               {box.description}
             </p>
           )}
 
-          {/* CHEF / KITCHEN INFO */}
-          <div className="flex items-center gap-2 mb-4 bg-gray-50 p-2 rounded-lg w-fit">
-            <i className="fa-solid fa-kitchen-set text-[#8B2525]/80 text-xs"></i>
-            <span className="text-xs font-medium text-gray-600">
-              إعداد: {getChefName(box.chef_id, chefs) || box.chef || 'مطبخ'}
-            </span>
-          </div>
+          {/* CHEF / KITCHEN INFO - Prioritize box.chef (direct name) over chef_id lookup */}
+          {(box.chef || box.chef_id) && (
+            <div className="flex items-center gap-2 mb-4 bg-gray-50 p-2 rounded-lg w-fit">
+              <i className="fa-solid fa-kitchen-set text-[#8B2525]/80 text-xs"></i>
+              <span className="text-xs font-medium text-gray-600">
+                إعداد: {box.chef || getChefName(box.chef_id, chefs)}
+              </span>
+            </div>
+          )}
 
         </div>
 

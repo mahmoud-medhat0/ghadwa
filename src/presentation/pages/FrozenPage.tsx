@@ -7,7 +7,6 @@ import { UnifiedProductCard } from '@/presentation/features/home/UnifiedProductC
 export const FrozenPage: React.FC = () => {
     const { menuItems } = useData();
     const { cart, updateQuantity } = useCart();
-
     const items = menuItems.filter(item => item.category === 'frozen' || item.name.includes('مجمد') || item.name.includes('تجهيز'));
 
     useEffect(() => {

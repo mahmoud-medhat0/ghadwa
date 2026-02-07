@@ -6,6 +6,7 @@ import { OrderSummary } from '../features/checkout/OrderSummary';
 import { useCart } from '@/application/context/CartContext';
 import { useData } from '@/application/context/DataContext';
 import { api } from '@/infrastructure/api/api';
+import { sendOrderEmail } from '@/infrastructure/services/emailService';
 import { useNavigate } from 'react-router-dom';
 
 export const CheckoutPage: React.FC = () => {
@@ -66,9 +67,20 @@ export const CheckoutPage: React.FC = () => {
                 setDateError('عذراً، انتهت مواعيد طلبات اليوم (بعد 6:15 م). يرجى اختيار يوم آخر.');
                 setAvailableTimeSlots([]);
                 return;
-            } else {
-                setDateError('');
             }
+
+            // Check if minimum time (now + 2h) exceeds last slot time
+            const minTime = new Date(now.getTime() + 2 * 60 * 60 * 1000); // Now + 2h
+            const lastSlotTime = new Date();
+            lastSlotTime.setHours(endHour, 30, 0); // 11:30 PM
+
+            if (minTime > lastSlotTime) {
+                setDateError('عذراً، لا توجد مواعيد متاحة اليوم. أقرب موعد يجب أن يكون بعد ساعتين على الأقل من الآن. يرجى اختيار يوم آخر.');
+                setAvailableTimeSlots([]);
+                return;
+            }
+
+            setDateError('');
         } else {
             setDateError('');
         }
@@ -100,6 +112,12 @@ export const CheckoutPage: React.FC = () => {
                 }
             });
         }
+
+        // Additional check: if today and no slots available after 2h filter
+        if (isToday && slots.length === 0) {
+            setDateError('عذراً، لا توجد مواعيد متاحة اليوم. أقرب موعد يجب أن يكون بعد ساعتين على الأقل. يرجى اختيار يوم آخر.');
+        }
+
         setAvailableTimeSlots(slots);
 
         // Reset selected time if it's no longer valid
@@ -180,6 +198,7 @@ export const CheckoutPage: React.FC = () => {
 
     const onPlaceOrder = async (data: CheckoutForm) => {
         try {
+            // Now we only have items from a single chef (enforced in cart)
             const orderItems: any[] = cart.map(item => ({
                 product_name: item.name,
                 quantity: item.quantity,
@@ -190,8 +209,12 @@ export const CheckoutPage: React.FC = () => {
                 notes: ''
             }));
 
+            // Get chef_id from first item (all items should have same chef)
+            const chefId = cart[0]?.chef_id;
+
             const order: Order = {
-                id: crypto.randomUUID(), // Temporarily generated ID
+                id: crypto.randomUUID(),
+                chef_id: chefId,
                 status: 'pending',
                 subtotal: subtotal,
                 discount_amount: discount,
@@ -202,12 +225,31 @@ export const CheckoutPage: React.FC = () => {
                 notes: data.notes,
                 payment_method: 'cash',
                 items: orderItems,
+                itemsDetails: cart, // Pass cart items for order_items insertion
                 created_at: new Date().toISOString()
             };
 
             const success = await api.submitOrder(order);
 
             if (success) {
+                // Send email notification to admin
+                await sendOrderEmail({
+                    customerName: data.name,
+                    customerPhone: data.phone,
+                    deliveryAddress: data.address,
+                    orderItems: cart.map(item => ({
+                        name: item.name,
+                        quantity: item.quantity,
+                        price: item.price
+                    })),
+                    subtotal: subtotal,
+                    discount: discount,
+                    total: total,
+                    notes: data.notes,
+                    deliveryDate: data.deliveryDate,
+                    deliveryTime: data.deliveryTime
+                });
+
                 alert('تم استلام طلبك بنجاح! سيتم التواصل معك قريباً.');
                 clearCart();
                 navigate('/');

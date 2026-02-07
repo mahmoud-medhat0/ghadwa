@@ -1,20 +1,27 @@
 import React from 'react';
 import { CartItem } from '@/core/domain/entities';
+import { useNavigate } from 'react-router-dom';
 
 interface StickyCartSummaryProps {
     cart: CartItem[];
-    onOpenCart: () => void;
+    onOpenCart?: () => void; // Optional now, not used
 }
 
-export const StickyCartSummary: React.FC<StickyCartSummaryProps> = ({ cart, onOpenCart }) => {
+export const StickyCartSummary: React.FC<StickyCartSummaryProps> = ({ cart }) => {
+    const navigate = useNavigate();
+
     if (cart.length === 0) return null;
 
     const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
     const totalPrice = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
+    const handleClick = () => {
+        navigate('/checkout');
+    };
+
     return (
         <div
-            onClick={onOpenCart}
+            onClick={handleClick}
             className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-40 p-4 md:hidden cursor-pointer hover:bg-gray-50 transition-colors"
         >
             <div className="flex justify-between items-center max-w-7xl mx-auto">
