@@ -10,7 +10,7 @@
  */
 
 // Admin email to receive order notifications
-const ADMIN_EMAIL = 'ghadwa444@gmail.com@gmail.com';
+const ADMIN_EMAIL = 'ghadwa444@gmail.com';
 const FORMSUBMIT_URL = `https://formsubmit.co/ajax/${ADMIN_EMAIL}`;
 
 interface OrderEmailData {
