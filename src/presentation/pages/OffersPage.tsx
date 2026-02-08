@@ -53,7 +53,7 @@ export const OffersPage: React.FC = () => {
                                     badgeIcon="fa-solid fa-fire"
                                     badgeColor="bg-orange-600"
                                     showChef={true}
-                                    chefName={getChefName(item.chef_id)}
+                                    chefName={item.chef}
                                 />
                             </div>
                         ))}

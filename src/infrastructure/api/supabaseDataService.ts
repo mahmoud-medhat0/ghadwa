@@ -114,21 +114,38 @@ export const supabaseDataService: IDataService = {
     },
 
     getOffers: async (): Promise<Product[]> => {
+        // Fetch chefs first to map chef name to chef_id
+        const { data: chefsData } = await supabase.from('chefs').select('id, name');
+        const chefsMap = new Map<string, string>();
+        if (chefsData) {
+            chefsData.forEach((chef: any) => {
+                chefsMap.set(chef.name?.toLowerCase(), String(chef.id));
+            });
+        }
+
         const { data, error } = await supabase.from('offers').select('*');
         if (error) {
             logger.error('SUPABASE', 'Error fetching offers', error);
             return [];
         }
+
         // Apply same mapping - includes old_price for showing original price
-        return (data || []).map((item: any) => ({
-            ...item,
-            image_url: item.img || item.image_url,
-            prep_time: parseInt(item.time) || 0,
-            category: 'طواجن',
-            old_price: item.old_price, // Original price before discount
-            is_available: item.is_available ?? true,
-            is_offer: true
-        })) as Product[];
+        return (data || []).map((item: any) => {
+            // Lookup chef_id from chef name
+            const chefName = item.chef?.toLowerCase();
+            const chefId = chefName ? chefsMap.get(chefName) : undefined;
+
+            return {
+                ...item,
+                image_url: item.img || item.image_url,
+                prep_time: parseInt(item.time) || 0,
+                category: item.category || 'طواجن',
+                old_price: item.old_price, // Original price before discount
+                chef_id: item.chef_id || chefId, // Map chef name to chef_id
+                is_available: item.is_available ?? true,
+                is_offer: true
+            };
+        }) as Product[];
     },
 
     getBoxes: async (): Promise<Box[]> => {

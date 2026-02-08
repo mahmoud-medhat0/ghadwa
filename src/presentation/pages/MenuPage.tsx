@@ -80,7 +80,7 @@ export const MenuPage: React.FC = () => {
                                     badgeLabel={item.category}
                                     badgeColor="bg-[#8B2525]"
                                     showChef={true}
-                                    chefName={getChefName(item.chef_id)}
+                                    chefName={item.chef}
                                 />
                             </div>
                         ))}
