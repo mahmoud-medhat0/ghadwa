@@ -1,6 +1,6 @@
 
 import { IDataService } from '@/core/interfaces/IDataService';
-import { Chef, Order, Product, Box, PromoCode, ContactSettings } from '@/core/domain/entities';
+import { Chef, Order, Product, Box, PromoCode, ContactSettings, Category } from '@/core/domain/entities';
 import { supabase } from '../supabase/client';
 import { logger } from '@/infrastructure/logging/logger';
 
@@ -224,6 +224,20 @@ export const supabaseDataService: IDataService = {
             return altData as ContactSettings;
         }
         return data as ContactSettings;
+    },
+
+    getCategories: async (): Promise<Category[]> => {
+        const { data, error } = await supabase.from('categories').select('*').order('id', { ascending: true });
+        if (error) {
+            logger.error('SUPABASE', 'Error fetching categories', error);
+            return [];
+        }
+        return (data || []).map((cat: any) => ({
+            id: cat.id,
+            name: cat.name,
+            icon: cat.icon,
+            created_at: cat.created_at
+        })) as Category[];
     },
 
     getPartners: async (): Promise<any[]> => {

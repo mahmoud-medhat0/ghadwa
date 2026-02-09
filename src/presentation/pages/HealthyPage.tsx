@@ -7,7 +7,7 @@ import { useCart } from '@/application/context/CartContext';
 import { PageHeader } from '@/presentation/components/shared/PageHeader';
 
 export const HealthyPage: React.FC = () => {
-    const { menuItems } = useData();
+    const { menuItems, chefs } = useData();
     const { cart, updateQuantity } = useCart();
 
     const items = menuItems.filter(item => item.category === 'healthy' || item.name.includes('صحي') || item.description?.includes('صحي'));
@@ -15,6 +15,12 @@ export const HealthyPage: React.FC = () => {
     useEffect(() => {
         window.scrollTo(0, 0);
     }, []);
+
+    const isChefOpen = (chefId?: string): boolean => {
+        if (!chefId) return true;
+        const chef = chefs.find(c => c.id === chefId);
+        return chef?.is_active !== false;
+    };
 
     return (
         <div className="min-h-screen bg-warm-50 pt-28 pb-16 animate-fade-in relative">
@@ -46,6 +52,7 @@ export const HealthyPage: React.FC = () => {
                                     badgeLabel="صحي"
                                     badgeIcon="fa-solid fa-leaf"
                                     badgeColor="bg-green-600"
+                                    isChefOpen={isChefOpen(item.chef_id)}
                                 />
                             </div>
                         ))}

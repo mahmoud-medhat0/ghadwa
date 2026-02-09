@@ -19,6 +19,7 @@ interface UnifiedProductCardProps {
     showChef?: boolean;
     chefName?: string;
     showRating?: boolean;
+    isChefOpen?: boolean; // Whether the chef's kitchen is accepting orders
 }
 
 export const UnifiedProductCard: React.FC<UnifiedProductCardProps> = ({
@@ -32,11 +33,13 @@ export const UnifiedProductCard: React.FC<UnifiedProductCardProps> = ({
     borderColor = 'border-gray-100',
     showChef = false,
     chefName,
-    showRating = false
+    showRating = false,
+    isChefOpen = true // Default to open if not specified
 }) => {
     const isOpen = item.is_available;
     const isActive = item.is_active !== false;
-    const canOrder = isOpen && isActive;
+    const canOrder = isOpen && isActive && isChefOpen;
+    const isKitchenClosed = !isChefOpen;
 
     return (
         <div className={`group flex flex-col bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 border ${borderColor} overflow-hidden h-full hover:-translate-y-1 ${!canOrder ? 'grayscale opacity-80' : ''}`}>
@@ -66,8 +69,17 @@ export const UnifiedProductCard: React.FC<UnifiedProductCardProps> = ({
                 {!canOrder && (
                     <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-10 backdrop-blur-[1px]">
                         <span className="bg-white/95 text-gray-900 px-4 py-2 rounded-lg text-sm font-bold shadow-lg flex items-center gap-2">
-                            <i className="fa-solid fa-ban text-red-600"></i>
-                            غير متاح
+                            {isKitchenClosed ? (
+                                <>
+                                    <i className="fa-solid fa-shop-lock text-orange-600"></i>
+                                    المطبخ مغلق
+                                </>
+                            ) : (
+                                <>
+                                    <i className="fa-solid fa-ban text-red-600"></i>
+                                    غير متاح
+                                </>
+                            )}
                         </span>
                     </div>
                 )}

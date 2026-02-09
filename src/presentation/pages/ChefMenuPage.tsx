@@ -108,7 +108,7 @@ export const ChefMenuPage: React.FC = () => {
                         <div className="flex-1 text-white pb-2">
                             <div className="flex items-center gap-3 mb-2">
                                 <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold">{chef.chef_name}</h1>
-                                {chef.is_active ? (
+                                {chef.is_active !== false ? (
                                     <span className="px-3 py-1 bg-green-500 text-white text-xs font-bold rounded-full flex items-center gap-1">
                                         <span className="w-2 h-2 bg-white rounded-full animate-pulse"></span>
                                         مفتوح للطلب
@@ -191,6 +191,7 @@ export const ChefMenuPage: React.FC = () => {
                                     badgeLabel={item.category}
                                     badgeColor="bg-[#8B2525]"
                                     showChef={false}
+                                    isChefOpen={chef.is_active !== false}
                                 />
                             </div>
                         ))}

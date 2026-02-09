@@ -1,6 +1,6 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { Chef, Order, MenuItem, Box, PromoCode, ContactSettings } from '@/core/domain/entities';
+import { Chef, Order, MenuItem, Box, PromoCode, ContactSettings, Category } from '@/core/domain/entities';
 import { api } from '@/infrastructure/api/api';
 import { logger } from '@/infrastructure/logging/logger';
 
@@ -13,6 +13,7 @@ interface DataContextType {
     bestSellers: MenuItem[];
     promoCodes: PromoCode[];
     contactSettings: ContactSettings;
+    categories: Category[];
     isLoading: boolean;
     refreshData: () => Promise<void>;
     setOrders: React.Dispatch<React.SetStateAction<Order[]>>; // expose setter for orders (needed for placing orders)
@@ -48,13 +49,14 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const [bestSellers, setBestSellers] = useState<MenuItem[]>([]);
     const [promoCodes, setPromoCodes] = useState<PromoCode[]>([]);
     const [contactSettings, setContactSettings] = useState<ContactSettings>(defaultContactSettings);
+    const [categories, setCategories] = useState<Category[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
     const refreshData = async () => {
         logger.info('APP', '📥 Starting data loading...');
         try {
             const startTime = performance.now();
-            const [chefsData, ordersData, menuData, offersData, boxesData, bestSellersData, promosData, settingsData] = await Promise.all([
+            const [chefsData, ordersData, menuData, offersData, boxesData, bestSellersData, promosData, settingsData, categoriesData] = await Promise.all([
                 api.getChefs(),
                 api.getOrders(),
                 api.getMenuItems(),
@@ -62,7 +64,8 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                 api.getBoxes(),
                 api.getBestSellers(),
                 api.getPromoCodes(),
-                api.getContactSettings()
+                api.getContactSettings(),
+                api.getCategories()
             ]);
             const loadTime = performance.now() - startTime;
 
@@ -74,6 +77,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             if (promosData.length) setPromoCodes(promosData);
             if (ordersData) setOrders(ordersData);
             if (settingsData) setContactSettings(settingsData);
+            if (categoriesData.length) setCategories(categoriesData);
 
             logger.info('APP', `✅ API data fetched in ${loadTime.toFixed(2)}ms`);
         } catch (error) {
@@ -97,6 +101,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             bestSellers,
             promoCodes,
             contactSettings,
+            categories,
             isLoading,
             refreshData,
             setOrders

@@ -199,6 +199,16 @@ export interface ContactSettings {
 }
 
 /**
+ * Category from categories table
+ */
+export interface Category {
+  id: number;           // BIGINT
+  name: string;
+  icon?: string;
+  created_at?: string;
+}
+
+/**
  * Partner from partners table
  */
 export interface Partner {

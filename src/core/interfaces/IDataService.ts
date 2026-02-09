@@ -1,7 +1,7 @@
-import { Chef, Order, Product, Box, PromoCode, ContactSettings, MenuItem } from '@/core/domain/entities';
+import { Chef, Order, Product, Box, PromoCode, ContactSettings, MenuItem, Category } from '@/core/domain/entities';
 
 export interface IDataService {
-    // Read
+    // Read`
     getChefs(): Promise<Chef[]>;
     getOrders(): Promise<Order[]>;
     getMenuItems(): Promise<Product[]>;
@@ -11,6 +11,7 @@ export interface IDataService {
     getPromoCodes(): Promise<PromoCode[]>;
     getContactSettings(): Promise<ContactSettings>;
     getPartners(): Promise<any[]>;
+    getCategories(): Promise<Category[]>;
 
     // Write / Actions
     submitOrder(order: any): Promise<boolean>;

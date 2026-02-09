@@ -1,13 +1,12 @@
 
 import React, { useEffect, useState } from 'react';
 import { UnifiedProductCard } from '@/presentation/features/home/UnifiedProductCard';
-import { MENU_CATEGORIES } from '@/core/constants';
 import { useData } from '@/application/context/DataContext';
 import { useCart } from '@/application/context/CartContext';
 import { PageHeader } from '@/presentation/components/shared/PageHeader';
 
 export const MenuPage: React.FC = () => {
-    const { menuItems, chefs } = useData();
+    const { menuItems, chefs, categories } = useData();
     const { cart, updateQuantity } = useCart();
 
     useEffect(() => {
@@ -22,11 +21,14 @@ export const MenuPage: React.FC = () => {
         return chef?.chef_name || 'مطبخ';
     };
 
-    const isChefActive = (chefId?: string): boolean => {
+    const isChefOpen = (chefId?: string): boolean => {
         if (!chefId) return true;
         const chef = chefs.find(c => c.id === chefId);
         return chef?.is_active !== false;
     };
+
+    // Build category names from DB, with "الكل" first
+    const categoryNames = ["الكل", ...categories.map(c => c.name)];
 
     const filteredItems = (activeCategory === "الكل"
         ? menuItems
@@ -46,7 +48,7 @@ export const MenuPage: React.FC = () => {
 
                 {/* Categories */}
                 <div className="flex overflow-x-auto pb-4 pt-2 hide-scrollbar gap-3 mb-10 sm:mb-12 justify-start md:justify-center">
-                    {MENU_CATEGORIES.map((cat) => (
+                    {categoryNames.map((cat) => (
                         <button
                             key={cat}
                             onClick={() => setActiveCategory(cat)}
@@ -81,6 +83,7 @@ export const MenuPage: React.FC = () => {
                                     badgeColor="bg-[#8B2525]"
                                     showChef={true}
                                     chefName={item.chef}
+                                    isChefOpen={isChefOpen(item.chef_id)}
                                 />
                             </div>
                         ))}

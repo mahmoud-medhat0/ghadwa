@@ -56,13 +56,13 @@ const HomePage = () => {
     return (
         <>
             <Hero onNavigate={dummyNavigate} onOpenMenu={() => { }} />
-            <BoxesSection boxes={boxes} cart={cart} updateQuantity={updateQuantity} chefs={chefs} />
-            {/* <WeeklyOffers offers={offers} cart={cart} updateQuantity={updateQuantity} /> */}
-            <HealthySection items={healthyItems} cart={cart} updateQuantity={updateQuantity} />
+            <WeeklyOffers offers={offers} cart={cart} updateQuantity={updateQuantity} />
             <BestSellers cart={cart} updateQuantity={updateQuantity} chefs={chefs} bestSellers={bestSellers} />
-            <FullMenu menuItems={menuItems} cart={cart} updateQuantity={updateQuantity} chefs={chefs} />
-            <ChefsSection onNavigate={dummyNavigate} onChefClick={() => { }} chefs={chefs} />
+            <BoxesSection boxes={boxes} cart={cart} updateQuantity={updateQuantity} chefs={chefs} />
+            <HealthySection items={healthyItems} cart={cart} updateQuantity={updateQuantity} />
             <FrozenSection items={frozenItems} cart={cart} updateQuantity={updateQuantity} />
+            <FullMenu menuItems={menuItems} cart={cart} updateQuantity={updateQuantity} chefs={chefs} />
+            <ChefsSection onNavigate={dummyNavigate} onChefClick={(chef) => { window.location.href = `/chef/${chef.id}`; }} chefs={chefs} />
 
             {/* <CustomerFeedback /> */}
             {/* <CareersSection /> */}

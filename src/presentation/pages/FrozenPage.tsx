@@ -5,13 +5,19 @@ import { PageHeader } from '@/presentation/components/shared/PageHeader';
 import { UnifiedProductCard } from '@/presentation/features/home/UnifiedProductCard';
 
 export const FrozenPage: React.FC = () => {
-    const { menuItems } = useData();
+    const { menuItems, chefs } = useData();
     const { cart, updateQuantity } = useCart();
     const items = menuItems.filter(item => item.category === 'frozen' || item.name.includes('مجمد') || item.name.includes('تجهيز'));
 
     useEffect(() => {
         window.scrollTo(0, 0);
     }, []);
+
+    const isChefOpen = (chefId?: string): boolean => {
+        if (!chefId) return true;
+        const chef = chefs.find(c => c.id === chefId);
+        return chef?.is_active !== false;
+    };
 
     return (
         <div className="min-h-screen bg-warm-50 pt-28 pb-16 animate-fade-in relative">
@@ -44,6 +50,7 @@ export const FrozenPage: React.FC = () => {
                                     badgeIcon="fa-regular fa-snowflake"
                                     badgeColor="bg-[#8B2525]"
                                     themeColor="#8B2525"
+                                    isChefOpen={isChefOpen(item.chef_id)}
                                 />
                             </div>
                         ))}

@@ -23,7 +23,7 @@ export const OffersPage: React.FC = () => {
         return chef?.chef_name || 'مطبخ';
     };
 
-    const isChefActive = (chefId?: string): boolean => {
+    const isChefOpen = (chefId?: string): boolean => {
         if (!chefId) return true;
         const chef = chefs.find(c => c.id === chefId);
         return chef?.is_active !== false;
@@ -54,6 +54,7 @@ export const OffersPage: React.FC = () => {
                                     badgeColor="bg-orange-600"
                                     showChef={true}
                                     chefName={item.chef}
+                                    isChefOpen={isChefOpen(item.chef_id)}
                                 />
                             </div>
                         ))}
