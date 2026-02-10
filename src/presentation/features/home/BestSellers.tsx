@@ -40,6 +40,9 @@ export const BestSellers: React.FC<BestSellersProps> = ({ cart, updateQuantity, 
                                     badgeIcon="fa-solid fa-utensils"
                                     badgeColor="bg-yellow-500"
                                     showRating={true}
+                                    showChef={true}
+                                    chefName={item.chef}
+                                    isChefOpen={item.chef_is_open ?? true}
                                 />
                             </div>
                         ))}

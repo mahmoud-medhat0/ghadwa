@@ -41,12 +41,8 @@ import { CheckoutPage } from '@/presentation/pages/CheckoutPage';
 
 // Home Component that consists of multiple sections
 const HomePage = () => {
-    const { offers, chefs, bestSellers, boxes, menuItems } = useData();
+    const { offers, chefs, bestSellers, boxes, menuItems, frozenItems, healthyItems } = useData();
     const { updateQuantity, cart } = useCart(); // Refactor to useCart logic
-
-    // Filter items for specific sections
-    const healthyItems = menuItems.filter(item => item.category === 'أكل صحي' || item.category?.toLowerCase() === 'healthy');
-    const frozenItems = menuItems.filter(item => item.category === 'مفرزنات' || item.category?.toLowerCase() === 'frozen');
 
     // TEMPORARY: Adapter for props based components until they are refactored
     const dummyNavigate = (page: string) => {
@@ -59,8 +55,8 @@ const HomePage = () => {
             <WeeklyOffers offers={offers} cart={cart} updateQuantity={updateQuantity} />
             <BestSellers cart={cart} updateQuantity={updateQuantity} chefs={chefs} bestSellers={bestSellers} />
             <BoxesSection boxes={boxes} cart={cart} updateQuantity={updateQuantity} chefs={chefs} />
-            <HealthySection items={healthyItems} cart={cart} updateQuantity={updateQuantity} />
-            <FrozenSection items={frozenItems} cart={cart} updateQuantity={updateQuantity} />
+            <HealthySection healthyItems={healthyItems} cart={cart} updateQuantity={updateQuantity} />
+            <FrozenSection frozenItems={frozenItems} cart={cart} updateQuantity={updateQuantity} />
             <FullMenu menuItems={menuItems} cart={cart} updateQuantity={updateQuantity} chefs={chefs} />
             <ChefsSection onNavigate={dummyNavigate} onChefClick={(chef) => { window.location.href = `/chef/${chef.id}`; }} chefs={chefs} />
 

@@ -25,8 +25,12 @@ export const BoxCard: React.FC<BoxCardProps> = ({
   isOpen,
   chefs = []
 }) => {
+  const isActive = box.is_active !== false;
+  const canOrder = isOpen && isActive;
+  const isKitchenClosed = !isOpen;
+
   return (
-    <div className="flex flex-col h-full bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 group overflow-hidden hover:-translate-y-1">
+    <div className={`flex flex-col h-full bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 group overflow-hidden hover:-translate-y-1 ${!canOrder ? 'grayscale opacity-80' : ''}`}>
 
       {/* IMAGE SECTION - Aspect Ratio 4:3 for better consistency */}
       <div className="relative aspect-[4/3] overflow-hidden bg-gray-100">
@@ -37,7 +41,7 @@ export const BoxCard: React.FC<BoxCardProps> = ({
           loading="lazy"
         />
 
-        {/* OVERLAY GRAIDENT - Subtle gradient at bottom of image for better text readability overlap if needed, or just aesthetic */}
+        {/* OVERLAY GRADIENT - Subtle gradient at bottom of image for better text readability overlap if needed, or just aesthetic */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
         {/* BADGE - Clean styling */}
@@ -46,6 +50,25 @@ export const BoxCard: React.FC<BoxCardProps> = ({
             عرض مميز
           </span>
         </div>
+
+        {/* Not Available Overlay */}
+        {!canOrder && (
+          <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-10 backdrop-blur-[1px]">
+            <span className="bg-white/95 text-gray-900 px-4 py-2 rounded-lg text-sm font-bold shadow-lg flex items-center gap-2">
+              {isKitchenClosed ? (
+                <>
+                  <i className="fa-solid fa-shop-lock text-orange-600"></i>
+                  المطبخ مغلق
+                </>
+              ) : (
+                <>
+                  <i className="fa-solid fa-ban text-red-600"></i>
+                  غير متاح
+                </>
+              )}
+            </span>
+          </div>
+        )}
       </div>
 
       {/* CONTENT SECTION */}
@@ -127,7 +150,7 @@ export const BoxCard: React.FC<BoxCardProps> = ({
               cart={cart}
               updateQuantity={updateQuantity}
               className="w-full !bg-[#8B2525] hover:!bg-[#7A2020] text-white shadow-lg hover:shadow-xl !py-2.5 rounded-xl text-sm font-bold transition-all duration-300"
-              disabled={!box.is_active}
+              disabled={!canOrder}
             />
           </div>
         </div>

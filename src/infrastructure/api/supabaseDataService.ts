@@ -41,12 +41,14 @@ export const supabaseDataService: IDataService = {
     },
 
     getMenuItems: async (): Promise<Product[]> => {
-        // Fetch chefs first to map chef name to chef_id
-        const { data: chefsData } = await supabase.from('chefs').select('id, name');
+        // Fetch chefs first to map chef name to chef_id AND get is_open status
+        const { data: chefsData } = await supabase.from('chefs').select('id, name, is_open');
         const chefsMap = new Map<string, string>();
+        const chefStatusMap = new Map<string, boolean>();
         if (chefsData) {
             chefsData.forEach((chef: any) => {
                 chefsMap.set(chef.name?.toLowerCase(), String(chef.id));
+                chefStatusMap.set(String(chef.id), chef.is_open ?? true);
             });
         }
 
@@ -78,6 +80,7 @@ export const supabaseDataService: IDataService = {
                 // Lookup chef_id from chef name
                 const chefName = item.chef?.toLowerCase();
                 const chefId = chefName ? chefsMap.get(chefName) : undefined;
+                const finalChefId = item.chef_id || chefId;
 
                 return {
                     ...item,
@@ -85,13 +88,16 @@ export const supabaseDataService: IDataService = {
                     image_url: item.img,
                     prep_time: parseInt(item.time) || 0, // '45 د' -> 45
                     category: category,
-                    chef_id: item.chef_id || chefId, // Use existing chef_id or lookup from name
+                    chef_id: finalChefId, // Use existing chef_id or lookup from name
                     chef: item.chef, // Keep original chef name
 
                     // Ensure boolean flags
                     is_available: item.is_available ?? true,
                     is_offer: item.is_offer ?? false,
-                    is_featured: item.is_featured ?? false
+                    is_featured: item.is_featured ?? false,
+
+                    // Add chef_is_open status
+                    chef_is_open: finalChefId ? (chefStatusMap.get(finalChefId) ?? true) : true
                 };
             }) as Product[];
         }
@@ -114,12 +120,14 @@ export const supabaseDataService: IDataService = {
     },
 
     getOffers: async (): Promise<Product[]> => {
-        // Fetch chefs first to map chef name to chef_id
-        const { data: chefsData } = await supabase.from('chefs').select('id, name');
+        // Fetch chefs first to map chef name to chef_id AND get is_open status
+        const { data: chefsData } = await supabase.from('chefs').select('id, name, is_open');
         const chefsMap = new Map<string, string>();
+        const chefStatusMap = new Map<string, boolean>();
         if (chefsData) {
             chefsData.forEach((chef: any) => {
                 chefsMap.set(chef.name?.toLowerCase(), String(chef.id));
+                chefStatusMap.set(String(chef.id), chef.is_open ?? true);
             });
         }
 
@@ -134,6 +142,7 @@ export const supabaseDataService: IDataService = {
             // Lookup chef_id from chef name
             const chefName = item.chef?.toLowerCase();
             const chefId = chefName ? chefsMap.get(chefName) : undefined;
+            const finalChefId = item.chef_id || chefId;
 
             return {
                 ...item,
@@ -141,27 +150,65 @@ export const supabaseDataService: IDataService = {
                 prep_time: parseInt(item.time) || 0,
                 category: item.category || 'طواجن',
                 old_price: item.old_price, // Original price before discount
-                chef_id: item.chef_id || chefId, // Map chef name to chef_id
+                chef_id: finalChefId, // Map chef name to chef_id
                 is_available: item.is_available ?? true,
-                is_offer: true
+                is_offer: true,
+                // Add chef_is_open status
+                chef_is_open: finalChefId ? (chefStatusMap.get(finalChefId) ?? true) : true
             };
         }) as Product[];
     },
 
     getBoxes: async (): Promise<Box[]> => {
-        const { data, error } = await supabase.from('boxes').select('*');
-        if (error) {
-            logger.error('SUPABASE', 'Error fetching boxes', error);
+        // Fetch chefs first to map chef name to chef_id AND get is_open status
+        const { data: chefsData } = await supabase.from('chefs').select('id, name, is_open');
+        const chefsMap = new Map<string, string>();
+        const chefStatusMap = new Map<string, boolean>();
+        if (chefsData) {
+            chefsData.forEach((chef: any) => {
+                chefsMap.set(chef.name?.toLowerCase(), String(chef.id));
+                chefStatusMap.set(String(chef.id), chef.is_open ?? true);
+            });
+        }
+
+        // Fetch boxes
+        const { data: boxesData, error: boxesError } = await supabase
+            .from('boxes')
+            .select('*');
+
+        if (boxesError) {
+            logger.error('SUPABASE', 'Error fetching boxes', boxesError);
             return [];
         }
-        return (data || []).map((box: any) => ({
-            ...box,
-            image_url: box.img,
-            is_active: box.is_active ?? true
-        })) as Box[];
+
+        return (boxesData || []).map((box: any) => {
+            // Lookup chef_id from chef name
+            const chefName = box.chef?.toLowerCase();
+            const chefId = chefName ? chefsMap.get(chefName) : undefined;
+            const finalChefId = box.chef_id || chefId;
+
+            return {
+                ...box,
+                image_url: box.img,
+                is_active: box.is_active ?? true,
+                chef_id: finalChefId, // Use existing chef_id or lookup from name
+                chef: box.chef, // Keep original chef name
+                // Add chef_is_open field by looking up the chef's status
+                chef_is_open: finalChefId ? (chefStatusMap.get(String(finalChefId)) ?? true) : true
+            };
+        }) as Box[];
     },
 
     getBestSellers: async (): Promise<Product[]> => {
+        // Fetch chefs to get is_open status
+        const { data: chefsData } = await supabase.from('chefs').select('id, is_open');
+        const chefStatusMap = new Map<string, boolean>();
+        if (chefsData) {
+            chefsData.forEach((chef: any) => {
+                chefStatusMap.set(String(chef.id), chef.is_open ?? true);
+            });
+        }
+
         // Use 'menu_items' as primary
         // Try fetching featured items first
         let { data, error } = await supabase.from('menu_items').select('*').eq('is_featured', true).order('order_count', { ascending: false });
@@ -183,8 +230,98 @@ export const supabaseDataService: IDataService = {
             is_available: item.is_available ?? true,
             is_offer: item.is_offer ?? false,
             // Force true so they appear as featured in the UI list
-            is_featured: true
+            is_featured: true,
+            // Add chef_is_open status
+            chef_is_open: item.chef_id ? (chefStatusMap.get(item.chef_id) ?? true) : true
         })) as Product[];
+    },
+
+    getFrozenItems: async (): Promise<Product[]> => {
+        // Fetch chefs first to map chef name to chef_id AND get is_open status
+        const { data: chefsData } = await supabase.from('chefs').select('id, name, is_open');
+        const chefsMap = new Map<string, string>();
+        const chefStatusMap = new Map<string, boolean>();
+        if (chefsData) {
+            chefsData.forEach((chef: any) => {
+                chefsMap.set(chef.name?.toLowerCase(), String(chef.id));
+                chefStatusMap.set(String(chef.id), chef.is_open ?? true);
+            });
+        }
+
+        // Fetch frozen items from menu_items table
+        const { data, error } = await supabase
+            .from('menu_items')
+            .select('*')
+            .eq('category', 'مجمد');
+
+        if (error) {
+            logger.error('SUPABASE', 'Error fetching frozen items', error);
+            return [];
+        }
+
+        return (data || []).map((item: any) => {
+            // Lookup chef_id from chef name
+            const chefName = item.chef?.toLowerCase();
+            const chefId = chefName ? chefsMap.get(chefName) : undefined;
+            const finalChefId = item.chef_id || chefId;
+
+            return {
+                ...item,
+                image_url: item.img,
+                prep_time: parseInt(item.time) || 0,
+                category: 'frozen',
+                chef_id: finalChefId,
+                chef: item.chef,
+                is_available: item.is_available ?? true,
+                is_offer: item.is_offer ?? false,
+                is_featured: item.is_featured ?? false,
+                chef_is_open: finalChefId ? (chefStatusMap.get(String(finalChefId)) ?? true) : true
+            };
+        }) as Product[];
+    },
+
+    getHealthyItems: async (): Promise<Product[]> => {
+        // Fetch chefs first to map chef name to chef_id AND get is_open status
+        const { data: chefsData } = await supabase.from('chefs').select('id, name, is_open');
+        const chefsMap = new Map<string, string>();
+        const chefStatusMap = new Map<string, boolean>();
+        if (chefsData) {
+            chefsData.forEach((chef: any) => {
+                chefsMap.set(chef.name?.toLowerCase(), String(chef.id));
+                chefStatusMap.set(String(chef.id), chef.is_open ?? true);
+            });
+        }
+
+        // Fetch healthy items from menu_items table
+        const { data, error } = await supabase
+            .from('menu_items')
+            .select('*')
+            .eq('category', 'هيلثي');
+
+        if (error) {
+            logger.error('SUPABASE', 'Error fetching healthy items', error);
+            return [];
+        }
+
+        return (data || []).map((item: any) => {
+            // Lookup chef_id from chef name
+            const chefName = item.chef?.toLowerCase();
+            const chefId = chefName ? chefsMap.get(chefName) : undefined;
+            const finalChefId = item.chef_id || chefId;
+
+            return {
+                ...item,
+                image_url: item.img,
+                prep_time: parseInt(item.time) || 0,
+                category: 'healthy',
+                chef_id: finalChefId,
+                chef: item.chef,
+                is_available: item.is_available ?? true,
+                is_offer: item.is_offer ?? false,
+                is_featured: item.is_featured ?? false,
+                chef_is_open: finalChefId ? (chefStatusMap.get(String(finalChefId)) ?? true) : true
+            };
+        }) as Product[];
     },
 
     getPromoCodes: async (): Promise<PromoCode[]> => {

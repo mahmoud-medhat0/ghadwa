@@ -8,6 +8,8 @@ export interface IDataService {
     getOffers(): Promise<Product[]>;
     getBoxes(): Promise<Box[]>;
     getBestSellers(): Promise<Product[]>;
+    getFrozenItems(): Promise<Product[]>;
+    getHealthyItems(): Promise<Product[]>;
     getPromoCodes(): Promise<PromoCode[]>;
     getContactSettings(): Promise<ContactSettings>;
     getPartners(): Promise<any[]>;

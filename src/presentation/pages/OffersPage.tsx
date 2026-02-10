@@ -3,31 +3,16 @@ import React, { useEffect } from 'react';
 import { UnifiedProductCard } from '@/presentation/features/home/UnifiedProductCard';
 import { useData } from '@/application/context/DataContext';
 import { useCart } from '@/application/context/CartContext';
-import { useNavigate } from 'react-router-dom';
 import { PageHeader } from '@/presentation/components/shared/PageHeader';
-
 import { EmptyState } from '@/presentation/components/shared/EmptyState';
 
 export const OffersPage: React.FC = () => {
-    const { offers, chefs } = useData();
+    const { offers } = useData();
     const { cart, updateQuantity } = useCart();
-    const navigate = useNavigate();
 
     useEffect(() => {
         window.scrollTo(0, 0);
     }, []);
-
-    const getChefName = (chefId?: string): string => {
-        if (!chefId) return 'مطبخ';
-        const chef = chefs.find(c => c.id === chefId);
-        return chef?.chef_name || 'مطبخ';
-    };
-
-    const isChefOpen = (chefId?: string): boolean => {
-        if (!chefId) return true;
-        const chef = chefs.find(c => c.id === chefId);
-        return chef?.is_active !== false;
-    };
 
     return (
         <div className="min-h-screen bg-warm-50 pt-24 sm:pt-28 pb-16 sm:pb-20 animate-fade-in relative overflow-hidden">
@@ -54,7 +39,7 @@ export const OffersPage: React.FC = () => {
                                     badgeColor="bg-orange-600"
                                     showChef={true}
                                     chefName={item.chef}
-                                    isChefOpen={isChefOpen(item.chef_id)}
+                                    isChefOpen={item.chef_is_open ?? true}
                                 />
                             </div>
                         ))}

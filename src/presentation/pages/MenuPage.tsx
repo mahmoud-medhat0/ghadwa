@@ -83,7 +83,7 @@ export const MenuPage: React.FC = () => {
                                     badgeColor="bg-[#8B2525]"
                                     showChef={true}
                                     chefName={item.chef}
-                                    isChefOpen={isChefOpen(item.chef_id)}
+                                    isChefOpen={item.chef_is_open ?? true}
                                 />
                             </div>
                         ))}

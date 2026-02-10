@@ -29,7 +29,9 @@ export const BoxesSection: React.FC<BoxesSectionProps> = ({
         {/* RESPONSIVE GRID: 1 col (mobile) → 2 cols (tablet) → 3 cols (lg) → 4 cols (xl) */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
           {boxes.map(box => {
-            const isOpen = box.chef ? true : true; // Chef data from props
+            console.log(box)
+            // Use chef_is_open from database, default to true if not available
+            const isOpen = box.chef_is_open ?? true;
 
             return (
               <BoxCard

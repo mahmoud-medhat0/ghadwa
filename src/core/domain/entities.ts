@@ -71,9 +71,16 @@ export interface Product {
   created_at?: string;
   updated_at?: string;
 
+  // Nutrition information (optional, for healthy meals)
+  calories?: number;    // السعرات الحرارية
+  fats?: number;        // الدهون بالجرام
+  protein?: number;     // البروتين بالجرام
+  carbs?: number;       // الكربوهيدرات بالجرام
+
   // Legacy/computed fields (not in database, populated by UI)
   chef?: string;        // Chef name (computed from chef_id lookup)
   rating?: number;      // Product rating (could be from reviews)
+  chef_is_open?: boolean; // Chef's kitchen open status (from joined chefs table)
 }
 
 /**
@@ -160,6 +167,7 @@ export interface Box {
   image_url?: string;
   items_count?: number;
   is_active?: boolean;
+  chef_is_open?: boolean; // Chef's kitchen open status (from joined chefs table)
 
   created_at?: string;
   updated_at?: string;

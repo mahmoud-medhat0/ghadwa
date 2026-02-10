@@ -74,6 +74,7 @@ export const FullMenu: React.FC<FullMenuProps> = ({ menuItems, cart, updateQuant
                                     showChef={true}
                                     chefName={getChefName(item.chef_id)}
                                     themeColor="#8B2525"
+                                    isChefOpen={item.chef_is_open ?? true}
                                 />
                             </div>
                         ))}

@@ -8,10 +8,10 @@ import { EmptyState } from '@/presentation/components/shared/EmptyState'
 interface HealthySectionProps {
     cart: CartItem[];
     updateQuantity: (id: number, qty: number, item?: MenuItem) => void;
-    items: MenuItem[];
+    healthyItems: MenuItem[];
 }
 
-export const HealthySection: React.FC<HealthySectionProps> = ({ cart, updateQuantity, items }) => {
+export const HealthySection: React.FC<HealthySectionProps> = ({ cart, updateQuantity, healthyItems }) => {
     return (
         <section className="py-12 sm:py-16 bg-green-50/50 relative">
             <div className="absolute top-0 left-0 w-full h-full opacity-5 pattern-leaves pointer-events-none"></div>
@@ -21,7 +21,7 @@ export const HealthySection: React.FC<HealthySectionProps> = ({ cart, updateQuan
                     description="أكل صحي، خفيف، ومحسوب السعرات.. عشان صحتك تهمنا."
                 />
 
-                {items.length === 0 ? (
+                {healthyItems.length === 0 ? (
                     <EmptyState
                         icon="fa-solid fa-carrot"
                         title="قريباً.. قائمة الهيلثي"
@@ -30,7 +30,7 @@ export const HealthySection: React.FC<HealthySectionProps> = ({ cart, updateQuan
                     />
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                        {items.map(item => (
+                        {healthyItems.map(item => (
                             <div key={item.id} className="h-full">
                                 <UnifiedProductCard
                                     item={item}
@@ -39,6 +39,9 @@ export const HealthySection: React.FC<HealthySectionProps> = ({ cart, updateQuan
                                     badgeLabel="صحي"
                                     badgeIcon="fa-solid fa-leaf"
                                     badgeColor="bg-green-600"
+                                    showChef={true}
+                                    chefName={item.chef}
+                                    isChefOpen={item.chef_is_open ?? true}
                                 />
                             </div>
                         ))}

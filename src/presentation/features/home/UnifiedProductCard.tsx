@@ -112,6 +112,51 @@ export const UnifiedProductCard: React.FC<UnifiedProductCardProps> = ({
                         {item.description || "وجبة شهية ومعدة منزلياً بأعلى معايير الجودة"}
                     </p>
 
+                    {/* Nutrition Information (optional) */}
+                    {(item.calories || item.fats || item.protein || item.carbs) && (
+                        <div className="bg-gradient-to-r from-gray-50 to-white border border-gray-100 rounded-xl px-3 py-2 mb-3">
+                            <div className="flex items-center justify-center gap-2 text-xs flex-wrap">
+                                {item.protein && (
+                                    <>
+                                        <span className="flex items-center gap-1 font-bold text-gray-700">
+                                            <span>{item.protein}g</span>
+                                            <span className="text-gray-600">البروتين</span>
+                                            <span className="w-2 h-2 rounded-full bg-purple-500"></span>
+                                        </span>
+                                        {(item.carbs || item.fats || item.calories) && <span className="text-gray-300">|</span>}
+                                    </>
+                                )}
+                                {item.carbs && (
+                                    <>
+                                        <span className="flex items-center gap-1 font-bold text-gray-700">
+                                            <span>{item.carbs}g</span>
+                                            <span className="text-gray-600">كالوريز</span>
+                                            <span className="w-2 h-2 rounded-full bg-yellow-500"></span>
+                                        </span>
+                                        {(item.fats || item.calories) && <span className="text-gray-300">|</span>}
+                                    </>
+                                )}
+                                {item.fats && (
+                                    <>
+                                        <span className="flex items-center gap-1 font-bold text-gray-700">
+                                            <span>{item.fats}g</span>
+                                            <span className="text-gray-600">الدهون</span>
+                                            <span className="w-2 h-2 rounded-full bg-blue-500"></span>
+                                        </span>
+                                        {item.calories && <span className="text-gray-300">|</span>}
+                                    </>
+                                )}
+                                {item.calories && (
+                                    <span className="flex items-center gap-1 font-bold text-gray-700">
+                                        <span>{item.calories}</span>
+                                        <span className="text-gray-600">سعرة</span>
+                                        <span className="w-2 h-2 rounded-full bg-orange-500"></span>
+                                    </span>
+                                )}
+                            </div>
+                        </div>
+                    )}
+
                     {/* Rating */}
                     {showRating && (
                         <div className="flex items-center gap-1 text-amber-400 text-xs mb-3">

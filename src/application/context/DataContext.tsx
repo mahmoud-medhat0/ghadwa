@@ -11,6 +11,8 @@ interface DataContextType {
     offers: MenuItem[];
     boxes: Box[];
     bestSellers: MenuItem[];
+    frozenItems: MenuItem[];
+    healthyItems: MenuItem[];
     promoCodes: PromoCode[];
     contactSettings: ContactSettings;
     categories: Category[];
@@ -47,6 +49,8 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const [offers, setOffers] = useState<MenuItem[]>([]);
     const [boxes, setBoxes] = useState<Box[]>([]);
     const [bestSellers, setBestSellers] = useState<MenuItem[]>([]);
+    const [frozenItems, setFrozenItems] = useState<MenuItem[]>([]);
+    const [healthyItems, setHealthyItems] = useState<MenuItem[]>([]);
     const [promoCodes, setPromoCodes] = useState<PromoCode[]>([]);
     const [contactSettings, setContactSettings] = useState<ContactSettings>(defaultContactSettings);
     const [categories, setCategories] = useState<Category[]>([]);
@@ -56,13 +60,15 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         logger.info('APP', '📥 Starting data loading...');
         try {
             const startTime = performance.now();
-            const [chefsData, ordersData, menuData, offersData, boxesData, bestSellersData, promosData, settingsData, categoriesData] = await Promise.all([
+            const [chefsData, ordersData, menuData, offersData, boxesData, bestSellersData, frozenData, healthyData, promosData, settingsData, categoriesData] = await Promise.all([
                 api.getChefs(),
                 api.getOrders(),
                 api.getMenuItems(),
                 api.getOffers(),
                 api.getBoxes(),
                 api.getBestSellers(),
+                api.getFrozenItems(),
+                api.getHealthyItems(),
                 api.getPromoCodes(),
                 api.getContactSettings(),
                 api.getCategories()
@@ -74,6 +80,8 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             if (offersData.length) setOffers(offersData);
             if (boxesData.length) setBoxes(boxesData);
             if (bestSellersData.length) setBestSellers(bestSellersData);
+            if (frozenData.length) setFrozenItems(frozenData);
+            if (healthyData.length) setHealthyItems(healthyData);
             if (promosData.length) setPromoCodes(promosData);
             if (ordersData) setOrders(ordersData);
             if (settingsData) setContactSettings(settingsData);
@@ -99,6 +107,8 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             offers,
             boxes,
             bestSellers,
+            frozenItems,
+            healthyItems,
             promoCodes,
             contactSettings,
             categories,

@@ -8,10 +8,10 @@ import { EmptyState } from '@/presentation/components/shared/EmptyState'
 interface FrozenSectionProps {
     cart: CartItem[];
     updateQuantity: (id: number, qty: number, item?: MenuItem) => void;
-    items: MenuItem[];
+    frozenItems: MenuItem[];
 }
 
-export const FrozenSection: React.FC<FrozenSectionProps> = ({ cart, updateQuantity, items }) => {
+export const FrozenSection: React.FC<FrozenSectionProps> = ({ cart, updateQuantity, frozenItems }) => {
     return (
         <section className="py-12 sm:py-16 bg-blue-50/30 relative">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
@@ -20,7 +20,7 @@ export const FrozenSection: React.FC<FrozenSectionProps> = ({ cart, updateQuanti
                     description="وفري وقتك ومجهودك.. منتجات مجهزة على السوا وتتبيلة بيتي أصلية."
                 />
 
-                {items.length === 0 ? (
+                {frozenItems.length === 0 ? (
                     <EmptyState
                         icon="fa-regular fa-snowflake"
                         title="قريباً.. قسم المفرزنات"
@@ -29,7 +29,7 @@ export const FrozenSection: React.FC<FrozenSectionProps> = ({ cart, updateQuanti
                     />
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                        {items.map(item => (
+                        {frozenItems.map(item => (
                             <div key={item.id} className="h-full">
                                 <UnifiedProductCard
                                     item={item}
@@ -38,6 +38,7 @@ export const FrozenSection: React.FC<FrozenSectionProps> = ({ cart, updateQuanti
                                     badgeLabel="تجهيز بيتي"
                                     badgeIcon="fa-regular fa-snowflake"
                                     badgeColor="bg-blue-600"
+                                    isChefOpen={item.chef_is_open ?? true}
                                 />
                             </div>
                         ))}
